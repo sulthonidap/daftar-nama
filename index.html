@@ -19,7 +19,12 @@
     .hp { position: absolute; left: -9999px; }
     button { width: 100%; padding: 13px; font-size: 16px; font-weight: 600; color: #fff; background: #2563eb;
              border: 0; border-radius: 10px; cursor: pointer; }
-    button:disabled { opacity: .6; }
+    button { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    button:disabled { opacity: .75; cursor: wait; }
+    input:disabled { background: #f9fafb; color: #6b7280; }
+    .spin { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,.35); border-top-color: #fff;
+            border-radius: 50%; animation: putar .7s linear infinite; }
+    @keyframes putar { to { transform: rotate(360deg); } }
     .msg { margin-top: 14px; font-size: 14px; color: #dc2626; min-height: 18px; }
     .ok { text-align: center; display: none; }
     .ok .icon { font-size: 48px; }
@@ -59,7 +64,7 @@
 
     f.addEventListener('submit', async function (e) {
       e.preventDefault();
-      btn.disabled = true; btn.textContent = 'Mengirim...'; msg.textContent = '';
+      sibuk(true); msg.textContent = '';
       try {
         // text/plain supaya tidak kena CORS preflight
         const res = await fetch(API_URL, {
@@ -73,13 +78,20 @@
         document.getElementById('ok').style.display = 'block';
       } catch (err) {
         msg.textContent = err.message || 'Gagal mengirim, coba lagi.';
-        btn.disabled = false; btn.textContent = 'Kirim';
+        sibuk(false);
       }
     });
 
+    // Tampilkan spinner + kunci input selama proses kirim
+    function sibuk(on) {
+      btn.disabled = on;
+      f.nama.disabled = on; f.asal.disabled = on;
+      btn.innerHTML = on ? '<span class="spin"></span>Menyimpan...' : 'Kirim';
+    }
+
     function ulang() {
       f.reset();
-      btn.disabled = false; btn.textContent = 'Kirim';
+      sibuk(false);
       document.getElementById('ok').style.display = 'none';
       f.style.display = 'block';
     }
