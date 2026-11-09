@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar Nama</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f3f4f6; color: #111827;
+           min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .card { background: #fff; width: 100%; max-width: 400px; border-radius: 16px; padding: 28px 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    p.sub { margin: 0 0 22px; color: #6b7280; font-size: 14px; }
+    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    input { width: 100%; padding: 12px 14px; font-size: 16px; border: 1px solid #d1d5db; border-radius: 10px;
+            margin-bottom: 16px; outline: none; }
+    input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+    .hp { position: absolute; left: -9999px; }
+    button { width: 100%; padding: 13px; font-size: 16px; font-weight: 600; color: #fff; background: #2563eb;
+             border: 0; border-radius: 10px; cursor: pointer; }
+    button:disabled { opacity: .6; }
+    .msg { margin-top: 14px; font-size: 14px; color: #dc2626; min-height: 18px; }
+    .ok { text-align: center; display: none; }
+    .ok .icon { font-size: 48px; }
+    .ok h2 { margin: 8px 0 6px; }
+    .ok button { margin-top: 18px; background: #e5e7eb; color: #111827; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <form id="f">
+      <h1>Selamat datang</h1>
+      <p class="sub">Silakan isi data di bawah ini.</p>
+      <label for="nama">Nama</label>
+      <input id="nama" name="nama" required maxlength="200" autocomplete="name">
+      <label for="asal">Asal</label>
+      <input id="asal" name="asal" required maxlength="200" placeholder="Instansi / kota">
+      <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button id="btn" type="submit">Kirim</button>
+      <div class="msg" id="msg"></div>
+    </form>
+
+    <div class="ok" id="ok">
+      <div class="icon">✅</div>
+      <h2>Terima kasih!</h2>
+      <p class="sub">Data kamu sudah tercatat.</p>
+      <button type="button" onclick="ulang()">Isi lagi</button>
+    </div>
+  </div>
+
+  <script>
+    // URL Web App Google Apps Script (Terapkan → Kelola deployment)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzJhSORFbBpa_ZcWE3jrQw4sR5Sfu7jB9_w09lAQvVVWrEPU3oPntiiJiI6wVYqFobMjw/exec';
+
+    const f = document.getElementById('f');
+    const btn = document.getElementById('btn');
+    const msg = document.getElementById('msg');
+
+    f.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      btn.disabled = true; btn.textContent = 'Mengirim...'; msg.textContent = '';
+      try {
+        // text/plain supaya tidak kena CORS preflight
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ nama: f.nama.value, asal: f.asal.value, website: f.website.value })
+        });
+        const out = await res.json();
+        if (!out.ok) throw new Error(out.error || 'Gagal menyimpan');
+        f.style.display = 'none';
+        document.getElementById('ok').style.display = 'block';
+      } catch (err) {
+        msg.textContent = err.message || 'Gagal mengirim, coba lagi.';
+        btn.disabled = false; btn.textContent = 'Kirim';
+      }
+    });
+
+    function ulang() {
+      f.reset();
+      btn.disabled = false; btn.textContent = 'Kirim';
+      document.getElementById('ok').style.display = 'none';
+      f.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
